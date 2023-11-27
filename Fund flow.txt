@@ -1,0 +1,27 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Kmantrader
+
+//@version=4
+study("Fund flow", overlay=false)
+//              INPUTS:
+lenFast = input(3, title="Fast Length", type=input.integer, minval=1)
+lenSlow = input(19, title="Slow Length", type=input.integer, minval=1)
+lenSig = input(6, title="Signal Length", type=input.integer, minval=1)
+src = input(close, title="Source")
+plotSig = input(false, title="Signal Line?")
+
+//  Returns MACD + Signal Line
+getMACD(s, fastLen, slowLen, sigLen)=>
+    fast = ema(s, fastLen)
+    slow = ema(s, slowLen)
+    macd = fast - slow
+    sig = ema(macd, sigLen)
+    [macd, sig, macd-sig]
+
+[mac, signal, macHist] = getMACD(src, lenFast, lenSlow, lenSig)
+
+//              PLOTTING:
+candleColor = mac >= mac[1] ? color.green : color.red, style=plot.style_columns
+sigColor = signal > signal[1] ? color.yellow : color.lime
+plotcandle(open=mac[1], close=mac, high=mac, low=mac[1], color=candleColor)
+plot(plotSig ? signal : na, title="Signal Line", color=sigColor, style=plot.style_circles, linewidth=2)
